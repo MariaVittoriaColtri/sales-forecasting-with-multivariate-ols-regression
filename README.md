@@ -1,4 +1,5 @@
-# Sales Forecasting with OLS Regression: Iced Tea
+# Sales Forecasting with Multivariate OLS Regression
+Ice tea sales data
 
 ## Overview
 
@@ -16,11 +17,11 @@ I started with exploratory data analysis before building any model. Revenue foll
 
 I recoded Price_delta as a categorical variable, because it takes only three fixed values (−10, 0, +10). Treating it as continuous would have imposed a linear relationship between price and revenue, which does not reflect the actual pricing structure.
 
-Before running the regression, I assessed multicollinearity using VIF. Search scored 15.47, which falls in the severe range. Newspaper and Temperature were both moderate. I kept Search in the model to document the issue transparently because dropping a variable with high VIF does not solve the underlying problem, it just hides it.
+Before running the regression, I checked for multicollinearity using VIF (Variance Inflation Factor). VIF measures how much each predictor overlaps with the others. A value of 1 means no overlap. Between 1 and 5 is acceptable. Between 5 and 10 is a moderate concern. Above 10 is severe, which means that the coefficient for that variable cannot be estimated reliably. Search scored 15.47, which is in the severe range. Newspaper and Temperature were both moderate. I kept Search in the model because it's an e-commerce industry and removing it would have hidden a real limitation of the data and that is not useful for anyone who wants to use the model in practice.
 
-I first ran a baseline model using only Newspaper (R^2 = 0.72) as a reference point, then the full model with all six predictors (R^2 = 0.97). The Newspaper coefficient dropped from 8.67 to 4.50 once Temperature was included. The baseline was absorbing part of the seasonal demand and attributing it to advertising. This is a textbook case of omitted variable bias.
-
-For validation, I used a chronological train/test split, because the model should predict future weeks from past data. The test set covers mid-autumn to year-end, when there was no active advertising and temperatures dropped to 33 F. These conditions are very different from the training period, so a 5% MAPE on unseen data is a meaningful result.
+I first ran a baseline model using only Newspaper (R^2 = 0.72) as a reference point, then the full model with all six predictors (R^2 = 0.97). The Newspaper coefficient dropped from 8.67 to 4.50 once Temperature was included. The baseline was absorbing part of the seasonal demand and attributing it to advertising. This is a textbook case of omitted variable bias. [^1] 
+ 
+For validation, I split the data in order of time: weeks 1 to 41 for training and weeks 42 to 52 for testing. With a random split, the model could have been trained on week 50 and tested on week 10, which means it would have learned from data that comes after the weeks it is trying to predict. A time-based split avoids this problem. The test period covers mid-autumn to year-end, with no active advertising and temperatures dropping to 33 F: conditions that never appeared in the training data. A 5% MAPE on a test set this different from the training data shows that the model generalises well beyond the summer peak.
 
 Residual analysis confirmed that both linearity and normality hold, so the model coefficients are reliable.
 
@@ -31,6 +32,8 @@ Five out of six predictors were statistically significant. Holiday weeks had the
 Search was not significant due to severe multicollinearity with Temperature. This does not mean that Search advertising does not work, it means that the data cannot tell us, because Search and Temperature moved together the entire year.
 
 Full-model R²: 0.97, Test MAPE: 5%
+
+MAPE (Mean Absolute Percentage Error) measures the average percentage difference between the predicted and the actual values. A 5% MAPE means that on average the model prediction is off by 5% compared to the real revenue. In sales forecasting, anything below 10% is generally considered a good result. In this case the result is particularly meaningful because the test set is structurally different from the training data, with no active advertising and much lower temperatures. Many models degrade significantly under these conditions
 
 ## Recommendations for the Marketing Team
 
@@ -43,3 +46,5 @@ Full-model R²: 0.97, Test MAPE: 5%
 - **Do not cut Search without testing it first in a low-season week.** Search appeared statistically irrelevant in this analysis, but that is a data problem, not a channel problem. Search only ran in summer, at the same time as temperature peaked and the other two channels were also active. It was impossible to separate its effect from everything else happening at the same time. Before making any budget decision on Search, it should be tested in a quiet period like a non-holiday week in autumn or winter where its impact can actually be measured in isolation.
 
 - **Use discounts sparingly and only when the volume uplift justifies them.** Each discount tier costs 752 euro in lost revenue on average. Given that the typical order in this dataset is worth between 15 and 23 euro, you would need a very high number of extra orders just to cover that loss. Discounts should be used only for specific goals like reactivating dormant customers, not as a default promotional tool.
+
+  [^1] James, G., Witten, D., Hastie, T., Hastie, T., & Tibshirani, R. (2013). An Introduction to Statistical Learning. Springer.
