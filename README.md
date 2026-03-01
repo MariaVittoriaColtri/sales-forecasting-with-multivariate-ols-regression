@@ -17,7 +17,7 @@ I started with exploratory data analysis before building any model. Revenue foll
 
 I recoded Price_delta as a categorical variable, because it takes only three fixed values (−10, 0, +10). Treating it as continuous would have imposed a linear relationship between price and revenue, which does not reflect the actual pricing structure.
 
-Before running the regression, I checked for multicollinearity using VIF (Variance Inflation Factor). VIF measures how much each predictor overlaps with the others. A value of 1 means no overlap. Between 1 and 5 is acceptable. Between 5 and 10 is a moderate concern. Above 10 is severe, which means that the coefficient for that variable cannot be estimated reliably. Search scored 15.47, which is in the severe range. Newspaper and Temperature were both moderate. I kept Search in the model because it's an e-commerce industry and removing it would have hidden a real limitation of the data and that is not useful for anyone who wants to use the model in practice.
+Before running the regression, I checked for multicollinearity using VIF (Variance Inflation Factor). VIF measures how much each predictor overlaps with the others. A value of 1 means no overlap. Between 1 and 5 is acceptable. Between 5 and 10 is a moderate concern. Above 10 is severe, which means that the coefficient for that variable cannot be estimated reliably. Search scored 15.47, which is in the severe range. Newspaper and Temperature were both moderate. I kept Search in the model because removing it would have hidden a real limitation of the data and that is not useful for anyone who wants to use the model in practice.
 
 I first ran a baseline model using only Newspaper (R^2 = 0.72) as a reference point, then the full model with all six predictors (R^2 = 0.97). The Newspaper coefficient dropped from 8.67 to 4.50 once Temperature was included. The baseline was absorbing part of the seasonal demand and attributing it to advertising. This is a textbook case of omitted variable bias. [^1] 
  
@@ -33,7 +33,14 @@ Search was not significant due to severe multicollinearity with Temperature. Thi
 
 Full-model R²: 0.97, Test MAPE: 5%
 
-MAPE (Mean Absolute Percentage Error) measures the average percentage difference between the predicted and the actual values. A 5% MAPE means that on average the model prediction is off by 5% compared to the real revenue. In sales forecasting, anything below 10% is generally considered a good result. In this case the result is particularly meaningful because the test set is structurally different from the training data, with no active advertising and much lower temperatures. Many models degrade significantly under these conditions
+MAPE (Mean Absolute Percentage Error) measures the average percentage difference between the predicted and the actual values. A 5% MAPE means that on average the model prediction is off by 5% compared to the real revenue. In sales forecasting, anything below 10% is generally considered a good result. In this case the result is particularly meaningful because the test set is structurally different from the training data, with no active advertising and much lower temperatures. Many models degrade significantly under these conditions.
+
+
+## Media Contribution Analysis
+
+The chart below breaks down the predicted revenue for each week into the contribution of each variable. It shows that during weeks 24 to 35, Newspaper and Social Media add a visible layer on top of the baseline driven by Temperature and Holiday. Outside of this window, when advertising spend drops to zero, revenue is explained almost entirely by Temperature and Holiday. This confirms that advertising has a real effect, but it operates on top of a strong seasonal baseline that no campaign can replicate in winter. The full Excel validation file including the decomposition chart is available in the excel_validation folder.
+
+![Media Contribution Analysis](visuals/media_contribution_analysis_graph.png)
 
 ## Recommendations for the Marketing Team
 
@@ -47,4 +54,4 @@ MAPE (Mean Absolute Percentage Error) measures the average percentage difference
 
 - **Use discounts sparingly and only when the volume uplift justifies them.** Each discount tier costs 752 euro in lost revenue on average. Given that the typical order in this dataset is worth between 15 and 23 euro, you would need a very high number of extra orders just to cover that loss. Discounts should be used only for specific goals like reactivating dormant customers, not as a default promotional tool.
 
-  [^1] James, G., Witten, D., Hastie, T., Hastie, T., & Tibshirani, R. (2013). An Introduction to Statistical Learning. Springer.
+  [^1]: James, G., Witten, D., Hastie, T., Hastie, T., & Tibshirani, R. (2013). An Introduction to Statistical Learning. Springer.
